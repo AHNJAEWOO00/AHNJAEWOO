@@ -11,7 +11,7 @@ class Calculator:
 
     def run(self):
         while True:
-            print("\n계산할 수식을 입력하세요 (여러 줄 입력 가능, 빈 줄을 입력하면 계산):")
+            print("\n계산할 수식을 입력하세요 (여러 줄 입력 가능, 엔터키를 두번 누르면 계산을 합니다.):")
             lines = []
             while True:
                 line = input()
