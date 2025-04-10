@@ -29,6 +29,8 @@ namespace AHN_YANGSOL
         string ReaddataConv = "00000000";
         private string WritedataConv;
 
+
+        int autoStep = 0;
         public Form1()
         {
             InitializeComponent();
@@ -134,6 +136,89 @@ namespace AHN_YANGSOL
 
             // Writedata[0] ^= 0x04;
             // CIFX.xChannelWrite(Writedata);//2실린더 후진
+        }
+
+        private void label15_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label7_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label14_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void groupBox2_Enter(object sender, EventArgs e)
+        {
+
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            // 모든 실린더 후진 상태로 초기화
+            Writedata[0] &= 0xFE; // 1번 실린더 OFF (bit 0)
+            Writedata[0] &= 0xFD; // 2번 실린더 전진 OFF (bit 1)
+            Writedata[0] |= 0x04; // 2번 실린더 후진 ON (bit 2)
+
+            CIFX.xChannelWrite(Writedata);
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            autoStep = 0;
+            timer2.Interval = 1000; // 1초 간격
+            timer2.Start();
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            // 자동 시퀀스 타이머 정지
+            timer2.Stop();
+
+            // 모든 실린더 동작 중지 (비트 OFF)
+            Writedata[0] &= 0xF8; // Bit 0~2 OFF (0000 0111 -> 반전 = 1111 1000)
+            CIFX.xChannelWrite(Writedata);
+
+            MessageBox.Show("자동운전이 중지되었습니다.", "중지");
+        }
+
+        private void timer2_Tick(object sender, EventArgs e)
+        {
+            switch (autoStep)
+            {
+                case 0:
+                    // 2번 실린더 전진
+                    Writedata[0] |= 0x02;   // Bit 1 ON
+                    Writedata[0] &= 0xFB;   // Bit 2 OFF
+                    CIFX.xChannelWrite(Writedata);
+                    break;
+                case 1:
+                    // 2번 실린더 후진
+                    Writedata[0] |= 0x04;   // Bit 2 ON
+                    Writedata[0] &= 0xFD;   // Bit 1 OFF
+                    CIFX.xChannelWrite(Writedata);
+                    break;
+                case 2:
+                    // 1번 실린더 전진
+                    Writedata[0] |= 0x01;   // Bit 0 ON
+                    CIFX.xChannelWrite(Writedata);
+                    break;
+                case 3:
+                    // 1번 실린더 후진
+                    Writedata[0] &= 0xFE;   // Bit 0 OFF
+                    CIFX.xChannelWrite(Writedata);
+                    break;
+                case 4:
+                    // 시퀀스 종료
+                    autoStep = -1;  // -1로 설정 → 아래에서 ++ 되며 0부터 다시 시작됨
+                    break;
+            }
+            autoStep++;
         }
     }
 }
