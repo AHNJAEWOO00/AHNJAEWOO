@@ -1,25 +1,139 @@
-﻿
-Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.13.35825.156 d17.13
-MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AHN YANGSOL", "AHN YANGSOL\AHN YANGSOL.csproj", "{4A273A38-CA34-437D-A5F7-27757A4A761A}"
-EndProject
-Global
-	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|Any CPU = Debug|Any CPU
-		Release|Any CPU = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{4A273A38-CA34-437D-A5F7-27757A4A761A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4A273A38-CA34-437D-A5F7-27757A4A761A}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4A273A38-CA34-437D-A5F7-27757A4A761A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4A273A38-CA34-437D-A5F7-27757A4A761A}.Release|Any CPU.Build.0 = Release|Any CPU
-	EndGlobalSection
-	GlobalSection(SolutionProperties) = preSolution
-		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(ExtensibilityGlobals) = postSolution
-		SolutionGuid = {C5090D81-0676-4E42-A73A-CF8E7C420839}
-	EndGlobalSection
-EndGlobal
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using CIFX_50RE;
+
+
+
+
+
+
+
+
+
+
+namespace AHN_YANGSOL
+{
+    public partial class Form1: Form
+    {
+        byte[] Writedata = new byte[8];
+        byte[] Readdata = new byte[34];
+        
+        int Auto = 0;
+        string ReaddataConv = "00000000";
+        private string WritedataConv;
+
+        public Form1()
+        {
+            InitializeComponent();
+        }
+        
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            uint connect = CIFX.DriveConnect();
+            if (connect != 0)
+            {
+                label3.Text = "Okey";
+                label3.ForeColor = Color.Blue;
+                timer1.Interval = 300;
+                timer1.Start();
+            }
+            else
+            {
+                label3.Text = "Not Good";
+                label3.ForeColor = Color.Red;
+            }
+        }
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+            if (label3.Text == "Okey")
+            {
+                Readdata = CIFX.xChannelRead();
+                ReaddataConv  = Convert.ToString(Readdata[18], 2).PadLeft(8, '0');
+                WritedataConv = Convert.ToString(Writedata[0], 2).PadLeft(8, '0');
+                label7.Text = ReaddataConv[6] == '1' ? "전진" : "후진";
+                label14.Text= ReaddataConv[4] == '1' ? "전진" : "후진";
+                label10.Text = ReaddataConv;
+                label11.Text = WritedataConv;
+            }
+
+        }
+
+        private void label6_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label12_Click(object sender, EventArgs e)
+        {
+
+        }
+        private void radioButton1_CheckedChanged(object sender, EventArgs e)
+        {
+            if (radioButton1.Checked)
+                Writedata[0] |= 0x01;  // 비트 0 (0x01) ON (1번 실린더 켜기)
+            else
+                Writedata[0] &= 0xFE;  // 비트 0 (0x01) OFF (1번 실린더 끄기)
+
+            CIFX.xChannelWrite(Writedata);
+
+
+
+            //Writedata[0] = 0x01;
+            //CIFX.xChannelWrite(Writedata);
+        }
+        private void radioButton2_CheckedChanged(object sender, EventArgs e)
+        {
+            if (radioButton2.Checked)
+                Writedata[0] &= 0xFE;  // 비트 0 (0x01) OFF (1번 실린더 끄기)
+
+            CIFX.xChannelWrite(Writedata);
+
+
+
+            //Writedata[0] ^= 0x01;
+            //CIFX.xChannelWrite(Writedata);//1실린더 전후진
+        }
+
+        private void radioButton3_CheckedChanged(object sender, EventArgs e)
+        {
+
+            if (radioButton3.Checked)
+            {
+                Writedata[0] |= 0x02;  // 비트 1 (0x02) ON (2번 실린더 전진)
+                Writedata[0] &= 0xFB;  // 비트 2 (0x04) OFF (2번 실린더 후진 해제)
+            }
+
+            CIFX.xChannelWrite(Writedata);
+
+
+
+            //  Writedata[0] ^= 0x02;
+            //  CIFX.xChannelWrite(Writedata);//2실린더 전진
+        }
+
+        private void radioButton4_CheckedChanged(object sender, EventArgs e)
+        {
+            if (radioButton4.Checked)
+            {
+                Writedata[0] |= 0x04;  // 비트 2 (0x04) ON (2번 실린더 후진)
+                Writedata[0] &= 0xFD;  // 비트 1 (0x02) OFF (2번 실린더 전진 해제)
+            }
+
+            CIFX.xChannelWrite(Writedata);
+
+
+
+
+
+            // Writedata[0] ^= 0x04;
+            // CIFX.xChannelWrite(Writedata);//2실린더 후진
+        }
+    }
+}
