@@ -171,7 +171,7 @@ namespace AHN_YANGSOL
         private void button1_Click(object sender, EventArgs e)
         {
             autoStep = 0;
-            timer2.Interval = 1000; // 1초 간격
+            timer2.Interval = 300; // 1초 간격
             timer2.Start();
         }
 
@@ -193,32 +193,29 @@ namespace AHN_YANGSOL
             {
                 case 0:
                     // 2번 실린더 전진
-                    Writedata[0] |= 0x02;   // Bit 1 ON
-                    Writedata[0] &= 0xFB;   // Bit 2 OFF
+                    Writedata[0] |= 0x02;
+                    Writedata[0] &= 0xFB;
                     CIFX.xChannelWrite(Writedata);
                     break;
                 case 1:
                     // 2번 실린더 후진
-                    Writedata[0] |= 0x04;   // Bit 2 ON
-                    Writedata[0] &= 0xFD;   // Bit 1 OFF
+                    Writedata[0] |= 0x04;
+                    Writedata[0] &= 0xFD;
                     CIFX.xChannelWrite(Writedata);
                     break;
                 case 2:
                     // 1번 실린더 전진
-                    Writedata[0] |= 0x01;   // Bit 0 ON
+                    Writedata[0] |= 0x01;
                     CIFX.xChannelWrite(Writedata);
                     break;
                 case 3:
                     // 1번 실린더 후진
-                    Writedata[0] &= 0xFE;   // Bit 0 OFF
+                    Writedata[0] &= 0xFE;
                     CIFX.xChannelWrite(Writedata);
                     break;
-                case 4:
-                    // 시퀀스 종료
-                    autoStep = -1;  // -1로 설정 → 아래에서 ++ 되며 0부터 다시 시작됨
-                    break;
             }
-            autoStep++;
+
+            autoStep = (autoStep + 1) % 4; // 0 → 1 → 2 → 3 → 0 → ...
         }
     }
 }
